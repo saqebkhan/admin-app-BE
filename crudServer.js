@@ -6,7 +6,7 @@ mongoose.set("strictQuery", false);
 
 const cors = require("cors");
 app.use(bodyParser.json());
-
+const hostName = "0.0.0.0"
 // app.use(cors());
 
 const corsOptions = {
