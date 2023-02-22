@@ -1,4 +1,9 @@
 {
+  "name": "admin-app-be",
+  "version": "1.0.1",
+  "script": {
+    "start": "node crudServer.js"
+  },
   "dependencies": {
     "mongoose": "^6.9.1",
     "cors": "^2.8.5",
