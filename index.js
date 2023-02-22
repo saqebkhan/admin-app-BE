@@ -55,7 +55,10 @@ app.get("/myCollection", (req, res) => {
 });
 
 app.post("/myCollection", (req, res) => {
-  const newItem = new MyModel(req.body);
+  const newItem = new MyModel({
+    ...req.body,
+    createdAt: new Date() 
+  });
 
   newItem.save((err) => {
     if (err) {
