@@ -15,7 +15,7 @@ const corsOptions = {
 const port = 5000
 app.use(cors(corsOptions));
 const uri =
-  "mongodb+srv://saqebkhan:nRCwwfGKwbnFst4O@cluster0.mq3jsjx.mongodb.net/myData?retryWrites=true&w=majority";
+  "mongodb+srv://saqebkhan:VIwFLSTpNevWMTk6@cluster0.601godh.mongodb.net/sample_mflix?retryWrites=true&w=majority";
 // const uri = 'mongodb+srv://<username>:<password>@<cluster-address>/<database-name>?retryWrites=true&w=majority';
 
 mongoose
@@ -33,28 +33,56 @@ mongoose
 const mySchema = new mongoose.Schema({
   id: String,
   name: String,
+  email: String,
+  text: String,
+  date: Date,
 });
 
-const MyModel = mongoose.model("MyCollection", mySchema);
+const MyModel = mongoose.model("Comments", mySchema);
 
-app.get("/myCollection", (req, res) => {
-  // const data = new MyModel.find();
-  console.log("res");
-  // res.status(200).json({
-  //   data,
-  //   message: "success",
-  // });
-  MyModel.find({}, (err, data) => {
+app.get("/comments", (req, res) => {
+  const page = parseInt(req.query.page) || 1; // Parse the requested page number from the query string, default to 1 if not specified
+  const perPage = parseInt(req.query.perPage) || 10; // Parse the number of items per page from the query string, default to 10 if not specified
+
+  MyModel.countDocuments({}, (err, count) => { // Get the total number of items in the collection
     if (err) {
       res.status(500).send(err);
     } else {
-      console.log(data, "data")
-      res.send(data);
+      const totalPages = Math.ceil(count / perPage); // Calculate the total number of pages based on the number of items per page and total number of items
+
+      MyModel.find({}).skip((page - 1) * perPage).limit(perPage).exec((err, data) => { // Get the data for the requested page
+        if (err) {
+          res.status(500).send(err);
+        } else {
+          res.send({
+            data,
+            totalPages,
+            currentPage: page,
+            perPage,
+          });
+        }
+      });
     }
   });
 });
+app.get("/allcomments", (req, res) => {
+    // const data = new MyModel.find();
+    console.log("res");
+    // res.status(200).json({
+    //   data,
+    //   message: "success",
+    // });
+    MyModel.find({}, (err, data) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        console.log(data, "data")
+        res.send(data);
+      }
+    });
+  });
 
-app.post("/myCollection", (req, res) => {
+app.post("/comments", (req, res) => {
   const newItem = new MyModel(req.body);
 
   newItem.save((err) => {
@@ -66,7 +94,7 @@ app.post("/myCollection", (req, res) => {
   });
 });
 
-app.put("/myCollection/:id", (req, res) => {
+app.put("/comments/:id", (req, res) => {
   MyModel.findByIdAndUpdate(req.params.id, req.body, (err, data) => {
     if (err) {
       res.status(500).send(err);
@@ -76,7 +104,7 @@ app.put("/myCollection/:id", (req, res) => {
   });
 });
 
-app.delete("/myCollection/:id", (req, res) => {
+app.delete("/comments/:id", (req, res) => {
   MyModel.findByIdAndRemove(req.params.id, (err, data) => {
     if (err) {
       res.status(500).send(err);
@@ -85,6 +113,6 @@ app.delete("/myCollection/:id", (req, res) => {
     }
   });
 });
-app.listen("https://admin-app-c353f.web.app", () => {
+app.listen(5000, () => {
   console.log("listening at 5000");
 });
