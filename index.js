@@ -81,7 +81,9 @@ app.post("/tasks", (req, res) => {
     }
     // If a task with the same title exists, send an error message
     if (existingTask) {
-      return res.status(400).send({ message: "A task with this title already exists." });
+      return res
+        .status(400)
+        .send({ message: "A task with this title already exists." });
     }
     // If no task with the same title, create and save the new task
     const newItem = new MyModel(req.body);
@@ -94,7 +96,6 @@ app.post("/tasks", (req, res) => {
     });
   });
 });
-
 
 app.put("/tasks/:id", (req, res) => {
   MyModel.findByIdAndUpdate(req.params.id, req.body, (err, data) => {
