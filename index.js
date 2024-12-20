@@ -12,10 +12,11 @@ app.use(bodyParser.json());
 const corsOptions = {
   origin: "*",
 };
-const port = 5000
+
 app.use(cors(corsOptions));
 const uri =
-  "mongodb+srv://saqebkhan:nRCwwfGKwbnFst4O@cluster0.mq3jsjx.mongodb.net/myData?retryWrites=true&w=majority";
+  // "mongodb+srv://saqebkhan:nRCwwfGKwbnFst4O@cluster0.mq3jsjx.mongodb.net/myData?retryWrites=true&w=majority";
+  "mongodb+srv://saqebk619:TIeKTdjkzVzdktgW@cluster0.kqq13.mongodb.net/task-management-database?retryWrites=true&w=majority";
 // const uri = 'mongodb+srv://<username>:<password>@<cluster-address>/<database-name>?retryWrites=true&w=majority';
 
 mongoose
@@ -31,13 +32,16 @@ mongoose
   });
 
 const mySchema = new mongoose.Schema({
-  id: String,
-  name: String,
+  title: String,
+  description: String,
+  deadline: String,
+  priority: String,
+  stage: Number,
 });
 
-const MyModel = mongoose.model("MyCollection", mySchema);
+const MyModel = mongoose.model("tasks", mySchema);
 
-app.get("/myCollection", (req, res) => {
+app.get("/tasks", (req, res) => {
   // const data = new MyModel.find();
   console.log("res");
   // res.status(200).json({
@@ -48,25 +52,51 @@ app.get("/myCollection", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else {
-      console.log(data, "data")
+      console.log(data, "data");
       res.send(data);
     }
   });
 });
 
-app.post("/myCollection", (req, res) => {
-  const newItem = new MyModel(req.body);
-
-  newItem.save((err) => {
+app.get("/tasks/:id", (req, res) => {
+  const taskId = req.params.id;
+  MyModel.findById(taskId, (err, data) => {
     if (err) {
       res.status(500).send(err);
+    } else if (!data) {
+      res.status(404).send({ message: "Task not found" });
     } else {
-      res.send(newItem);
+      res.send(data);
     }
   });
 });
 
-app.put("/myCollection/:id", (req, res) => {
+app.post("/tasks", (req, res) => {
+  const { title } = req.body;
+
+  // Check if a task with the same title already exists
+  MyModel.findOne({ title: title }, (err, existingTask) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    // If a task with the same title exists, send an error message
+    if (existingTask) {
+      return res.status(400).send({ message: "A task with this title already exists." });
+    }
+    // If no task with the same title, create and save the new task
+    const newItem = new MyModel(req.body);
+    newItem.save((err) => {
+      if (err) {
+        return res.status(500).send(err);
+      } else {
+        return res.send(newItem);
+      }
+    });
+  });
+});
+
+
+app.put("/tasks/:id", (req, res) => {
   MyModel.findByIdAndUpdate(req.params.id, req.body, (err, data) => {
     if (err) {
       res.status(500).send(err);
@@ -76,7 +106,7 @@ app.put("/myCollection/:id", (req, res) => {
   });
 });
 
-app.delete("/myCollection/:id", (req, res) => {
+app.delete("/tasks/:id", (req, res) => {
   MyModel.findByIdAndRemove(req.params.id, (err, data) => {
     if (err) {
       res.status(500).send(err);
@@ -85,6 +115,7 @@ app.delete("/myCollection/:id", (req, res) => {
     }
   });
 });
-app.listen("https://admin-app-c353f.web.app", () => {
-  console.log("listening at 5000");
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Listening on http://localhost:${port}`);
 });
