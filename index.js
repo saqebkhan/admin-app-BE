@@ -71,20 +71,19 @@ app.get("/tasks/:id", (req, res) => {
     }
   });
 });
-
 app.post("/tasks", (req, res) => {
-  const { title } = req.body;
+  const { userId, title } = req.body;
 
-  // Check if a task with the same title already exists
-  MyModel.findOne({ title: title }, (err, existingTask) => {
+  // Check if a task with the same title already exists for the current user
+  MyModel.findOne({ userId: userId, title: title }, (err, existingTask) => {
     if (err) {
       return res.status(500).send(err);
     }
-    // If a task with the same title exists, send an error message
+    // If a task with the same title exists for the current user, send an error message
     if (existingTask) {
       return res
         .status(400)
-        .send({ message: "A task with this title already exists." });
+        .send({ message: "A task with this title already exists for your user." });
     }
     // If no task with the same title, create and save the new task
     const newItem = new MyModel(req.body);
@@ -99,21 +98,21 @@ app.post("/tasks", (req, res) => {
 });
 
 app.put("/tasks/:id", (req, res) => {
-  const { title } = req.body;
+  const { userId, title } = req.body;
   const taskId = req.params.id;
 
-  // Check if a task with the same title already exists, excluding the current task
+  // Check if a task with the same title already exists for the current user, excluding the current task
   MyModel.findOne(
-    { title: title, _id: { $ne: taskId } },
+    { userId: userId, title: title, _id: { $ne: taskId } },
     (err, existingTask) => {
       if (err) {
         return res.status(500).send(err);
       }
-      // If a task with the same title exists, send an error message
+      // If a task with the same title exists for the current user, send an error message
       if (existingTask) {
         return res
           .status(400)
-          .send({ message: "A task with this title already exists." });
+          .send({ message: "A task with this title already exists for your user." });
       }
 
       // If no duplicate title, update the task
