@@ -98,13 +98,40 @@ app.post("/tasks", (req, res) => {
 });
 
 app.put("/tasks/:id", (req, res) => {
-  MyModel.findByIdAndUpdate(req.params.id, req.body, (err, data) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.send(data);
+  const { title } = req.body;
+  const taskId = req.params.id;
+
+  // Check if a task with the same title already exists, excluding the current task
+  MyModel.findOne(
+    { title: title, _id: { $ne: taskId } },
+    (err, existingTask) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      // If a task with the same title exists, send an error message
+      if (existingTask) {
+        return res
+          .status(400)
+          .send({ message: "A task with this title already exists." });
+      }
+
+      // If no duplicate title, update the task
+      MyModel.findByIdAndUpdate(
+        taskId,
+        req.body,
+        { new: true },
+        (err, updatedTask) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          if (!updatedTask) {
+            return res.status(404).send({ message: "Task not found" });
+          }
+          return res.send(updatedTask);
+        }
+      );
     }
-  });
+  );
 });
 
 app.delete("/tasks/:id", (req, res) => {
